@@ -2,9 +2,9 @@
 #![deny(clippy::unwrap_used)]
 
 use dotenv::dotenv;
-use log::info;
 use poem::{listener::TcpListener, middleware::Tracing, EndpointExt, Route, Server};
 use poem_mcpserver::{streamable_http, McpServer};
+use tracing::info;
 
 mod mcp;
 

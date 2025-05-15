@@ -3,12 +3,12 @@ use std::net::{SocketAddr, TcpStream};
 use std::path::Path;
 use std::sync::Arc;
 
-use log::{debug, error, info};
 use once_cell::sync::Lazy;
 use poem_mcpserver::{content::Json, Tools};
 use serde::{Deserialize, Serialize};
 use ssh2::Session;
 use tokio::sync::Mutex;
+use tracing::{debug, error, info};
 use uuid::Uuid;
 
 // Global storage for active SSH sessions
