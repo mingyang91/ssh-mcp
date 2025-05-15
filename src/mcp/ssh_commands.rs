@@ -52,7 +52,7 @@ impl McpSSHCommands {
         username: String,
         password: Option<String>,
         key_path: Option<String>,
-    ) -> Json<serde_json::Value> {
+    ) -> Json<Result<SshConnectResponse, ErrorResponse>> {
         info!("Attempting SSH connection to {}@{}", username, address);
 
         match connect_to_ssh(
@@ -71,61 +71,46 @@ impl McpSSHCommands {
                 let mut sessions = SSH_SESSIONS.lock().await;
                 sessions.insert(session_id.clone(), Arc::new(Mutex::new(session)));
 
-                Json(
-                    serde_json::to_value(SshConnectResponse {
-                        session_id,
-                        message: format!("Successfully connected to {}@{}", username, address),
-                        authenticated: true,
-                    })
-                    .unwrap(),
-                )
+                Json(Ok(SshConnectResponse {
+                    session_id,
+                    message: format!("Successfully connected to {}@{}", username, address),
+                    authenticated: true,
+                }))
             }
             Err(e) => {
                 error!("SSH connection failed: {}", e);
-                Json(
-                    serde_json::to_value(ErrorResponse {
-                        error: e.to_string(),
-                    })
-                    .unwrap(),
-                )
+                Json(Err(ErrorResponse {
+                    error: e.to_string(),
+                }))
             }
         }
     }
 
     /// Execute a command on a connected SSH session
-    async fn ssh_execute(&self, session_id: String, command: String) -> Json<serde_json::Value> {
+    async fn ssh_execute(
+        &self,
+        session_id: String,
+        command: String,
+    ) -> Json<Result<SshCommandResponse, ErrorResponse>> {
         info!(
             "Executing command on SSH session {}: {}",
             session_id, command
         );
 
         let sessions = SSH_SESSIONS.lock().await;
-        match sessions.get(&session_id) {
-            Some(session_arc) => {
-                let session = session_arc.lock().await;
-                match execute_ssh_command(&session, &command).await {
-                    Ok(output) => Json(serde_json::to_value(output).unwrap()),
-                    Err(e) => {
-                        error!("Command execution failed: {}", e);
-                        Json(
-                            serde_json::to_value(ErrorResponse {
-                                error: e.to_string(),
-                            })
-                            .unwrap(),
-                        )
-                    }
-                }
+        let Some(session_arc) = sessions.get(&session_id) else {
+            return Json(Err(ErrorResponse {
+                error: format!("No active SSH session with ID: {}", session_id),
+            }));
+        };
+        let session = session_arc.lock().await;
+        let res = execute_ssh_command(&session, &command).await.map_err(|e| {
+            error!("Command execution failed: {}", e);
+            ErrorResponse {
+                error: e.to_string(),
             }
-            None => {
-                error!("Session not found: {}", session_id);
-                Json(
-                    serde_json::to_value(ErrorResponse {
-                        error: format!("No active SSH session with ID: {}", session_id),
-                    })
-                    .unwrap(),
-                )
-            }
-        }
+        });
+        Json(res)
     }
 
     /// Setup port forwarding on an existing SSH session
@@ -135,78 +120,57 @@ impl McpSSHCommands {
         local_port: u16,
         remote_address: String,
         remote_port: u16,
-    ) -> Json<serde_json::Value> {
+    ) -> Json<Result<PortForwardingResponse, ErrorResponse>> {
         info!(
             "Setting up port forwarding from local port {} to {}:{} using session {}",
             local_port, remote_address, remote_port, session_id
         );
 
         let sessions = SSH_SESSIONS.lock().await;
-        match sessions.get(&session_id) {
-            Some(session_arc) => {
-                let session = session_arc.lock().await;
-                match setup_port_forwarding(&session, local_port, &remote_address, remote_port)
-                    .await
-                {
-                    Ok(local_addr) => Json(
-                        serde_json::to_value(PortForwardingResponse {
-                            local_address: local_addr.to_string(),
-                            remote_address: format!("{}:{}", remote_address, remote_port),
-                            active: true,
-                        })
-                        .unwrap(),
-                    ),
-                    Err(e) => {
-                        error!("Port forwarding setup failed: {}", e);
-                        Json(
-                            serde_json::to_value(ErrorResponse {
-                                error: e.to_string(),
-                            })
-                            .unwrap(),
-                        )
-                    }
-                }
-            }
-            None => {
-                error!("Session not found: {}", session_id);
-                Json(
-                    serde_json::to_value(ErrorResponse {
-                        error: format!("No active SSH session with ID: {}", session_id),
-                    })
-                    .unwrap(),
-                )
+        let Some(session_arc) = sessions.get(&session_id) else {
+            return Json(Err(ErrorResponse {
+                error: format!("No active SSH session with ID: {}", session_id),
+            }));
+        };
+        let session = session_arc.lock().await;
+        match setup_port_forwarding(&session, local_port, &remote_address, remote_port).await {
+            Ok(local_addr) => Json(Ok(PortForwardingResponse {
+                local_address: local_addr.to_string(),
+                remote_address: format!("{}:{}", remote_address, remote_port),
+                active: true,
+            })),
+            Err(e) => {
+                error!("Port forwarding setup failed: {}", e);
+                Json(Err(ErrorResponse {
+                    error: e.to_string(),
+                }))
             }
         }
     }
 
     /// Disconnect an SSH session
-    async fn ssh_disconnect(&self, session_id: String) -> Json<serde_json::Value> {
+    async fn ssh_disconnect(&self, session_id: String) -> Json<Result<String, ErrorResponse>> {
         info!("Disconnecting SSH session: {}", session_id);
 
         let mut sessions = SSH_SESSIONS.lock().await;
         if sessions.remove(&session_id).is_some() {
-            Json(serde_json::json!({
-                "message": format!("Session {} disconnected successfully", session_id)
-            }))
+            Json(Ok(format!(
+                "Session {} disconnected successfully",
+                session_id
+            )))
         } else {
-            Json(
-                serde_json::to_value(ErrorResponse {
-                    error: format!("No active SSH session with ID: {}", session_id),
-                })
-                .unwrap(),
-            )
+            Json(Err(ErrorResponse {
+                error: format!("No active SSH session with ID: {}", session_id),
+            }))
         }
     }
 
     /// List all active SSH sessions
-    async fn ssh_list_sessions(&self) -> Json<serde_json::Value> {
+    async fn ssh_list_sessions(&self) -> Json<Result<Vec<String>, ErrorResponse>> {
         let sessions = SSH_SESSIONS.lock().await;
         let session_ids: Vec<String> = sessions.keys().cloned().collect();
 
-        Json(serde_json::json!({
-            "active_sessions": session_ids,
-            "count": session_ids.len()
-        }))
+        Json(Ok(session_ids))
     }
 }
 
