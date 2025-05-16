@@ -8,6 +8,7 @@ A Rust implementation of an SSH client server with Model Context Protocol (MCP) 
 **Lightweight and Efficient:**
 - 🚀 `ssh-mcp`: only 4.3MB binary size, 1.8MB memory footprint
 - 🔄 `ssh-mcp-stdio`: only 1.5MB binary size, 2.3MB memory usage
+- 🐳 `docker`: only 27.5MB final image size
 
 ## Features
 

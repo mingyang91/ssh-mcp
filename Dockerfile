@@ -1,27 +1,31 @@
 ####################################
 # STAGE 1: Build the binary
 ####################################
-FROM rust AS builder
+FROM rust:alpine AS builder
 
 # Copy the actual source code
 WORKDIR /usr/src/ssh-mcp
 COPY . .
 
 # Build the actual binary
+RUN apk update && apk add --no-cache \
+    openssl-dev zlib-dev musl-dev \
+    openssl-libs-static zlib-static \
+    && rm -rf /var/cache/apk/*
 RUN cargo build --release
 
 ####################################
 # STAGE 2: Create the runtime image
 ####################################
-FROM debian:bookworm-slim
+FROM alpine:latest
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apk update && apk add --no-cache \
     ca-certificates \
     libssl3 \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/cache/apk/*
 
 # Create a non-root user to run the application
-RUN useradd -m ssh-mcp
+RUN addgroup -S ssh-mcp && adduser -S -G ssh-mcp ssh-mcp
 USER ssh-mcp
 WORKDIR /home/ssh-mcp
 
