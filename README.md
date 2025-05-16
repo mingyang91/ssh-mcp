@@ -5,6 +5,10 @@
 
 A Rust implementation of an SSH client server with Model Context Protocol (MCP) integration, allowing Large Language Models (LLMs) to connect to a SSH server and utilize SSH features.
 
+**Lightweight and Efficient:**
+- 🚀 `ssh-mcp`: only 4.3MB binary size, 1.8MB memory footprint
+- 🔄 `ssh-mcp-stdio`: only 1.5MB binary size, 2.3MB memory usage
+
 ## Features
 
 - **SSH Client Integration**: Connect to SSH servers via MCP commands
