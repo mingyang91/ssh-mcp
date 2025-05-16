@@ -16,32 +16,32 @@ A Rust implementation of an SSH client server with Model Context Protocol (MCP) 
 - Rust 1.70.0 or later
 - Cargo package manager
 
-## Getting Started
+## Installation and Integration
 
-### Installation
+### Installing as a Tool
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/yourusername/ssh-mcp.git
-   cd ssh-mcp
-   ```
+You can install ssh-mcp directly from cargo:
 
-2. Create a `.env` file (use `.env.example` as a template):
-   ```
-   cp .env.example .env
-   ```
+```bash
+cargo install ssh-mcp
+```
 
-3. Configure the environment variables in the `.env` file.
+### Integration with mcpServers
 
-4. Build the project:
-   ```
-   cargo build --release
-   ```
+To use SSH-MCP with mcpServers, add the following configuration to your mcpServers JSON configuration:
 
-5. Run the server:
-   ```
-   cargo run --release
-   ```
+```json
+{
+  "mcpServers": {
+    "ssh": {
+      "command": "ssh-mcp-stdio", 
+      "args": []
+    }
+  }
+}
+```
+
+This will register the `ssh-mcp-stdio` binary as an SSH handler, allowing LLMs to manage SSH connections through your MCP server.
 
 ## Usage
 
