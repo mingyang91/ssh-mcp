@@ -6,6 +6,7 @@ description = "SSH Model Context Protocol Server Integration"
 authors = ["mingyang91 <mingyang91@qq.com>"]
 default-run = "ssh-mcp"
 license = "MIT"
+repository = "https://github.com/mingyang91/ssh-mcp"
 
 [[bin]]
 name = "ssh-mcp-stdio"
