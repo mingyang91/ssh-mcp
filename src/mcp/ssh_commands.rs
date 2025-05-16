@@ -4,7 +4,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use once_cell::sync::Lazy;
-use poem_mcpserver::{content::Json, Tools};
+use poem_mcpserver::{Tools, content::Json};
 use serde::{Deserialize, Serialize};
 use ssh2::Session;
 use tokio::sync::Mutex;
@@ -114,6 +114,7 @@ impl McpSSHCommands {
     }
 
     /// Setup port forwarding on an existing SSH session
+    #[cfg(feature = "port_forward")]
     async fn ssh_forward(
         &self,
         session_id: String,
@@ -244,6 +245,7 @@ async fn execute_ssh_command(sess: &Session, command: &str) -> Result<SshCommand
     })
 }
 
+#[cfg(feature = "port_forward")]
 async fn setup_port_forwarding(
     sess: &Session,
     local_port: u16,

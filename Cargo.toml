@@ -1,9 +1,9 @@
 [package]
 name = "ssh-mcp"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 description = "SSH Model Context Protocol Server Integration"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["mingyang91 <mingyang91@qq.com>"]
 default-run = "ssh-mcp"
 
 [[bin]]
@@ -24,33 +24,27 @@ path = "src/lib.rs"
 poem = "=3.1.10"                                                            # Match version used by poem-mcpserver
 poem-mcpserver = { version = "0.2.3", features = ["streamable-http"] }
 tokio = { version = "1", features = ["full", "macros", "rt-multi-thread"] }
-async-std = "1.12"
 
 # SSH client
-ssh2 = "0.9"        # For SSH functionality
-futures = "0.3"     # For async features
-russh = "0.40"      # For advanced SSH functionality
-russh-keys = "0.40" # For key handling
+ssh2 = "0.9" # For SSH functionality
 
 # Serialization and data handling
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-schemars = "0.8.12"                                # Required by poem-mcpserver
+schemars = "0.8"                                   # Required by poem-mcpserver
 
 # Utilities
-dotenv = "0.15"                                        # For environment variables
-thiserror = "1.0"                                      # Error handling
-anyhow = "1.0"                                         # Error handling
-tracing = "0.1"                                        # Tracing for debugging
-tracing-subscriber = "0.3"                             # Tracing implementation
-uuid = { version = "1.5", features = ["v4", "serde"] } # For unique identifiers
-async-trait = "0.1"                                    # For async trait support
-once_cell = "1.18"                                     # For lazy static initialization
+dotenv = "0.15"                                         # For environment variables
+thiserror = "1.0"                                       # Error handling
+tracing = "0.1"                                         # Tracing for debugging
+tracing-subscriber = "0.3"                              # Tracing implementation
+uuid = { version = "1.16", features = ["v4", "serde"] } # For unique identifiers
+async-trait = "0.1"                                     # For async trait support
+once_cell = "1.21"                                      # For lazy static initialization
 
 [features]
 # Default features
-default = ["port_forward", "stateful_connections"]
+default = ["port_forward"]
 
 # Optional features
-port_forward = []         # Port forwarding support
-stateful_connections = [] # Stateful SSH connection support
+port_forward = [] # Port forwarding support

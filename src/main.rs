@@ -2,8 +2,8 @@
 #![deny(clippy::unwrap_used)]
 
 use dotenv::dotenv;
-use poem::{listener::TcpListener, middleware::Tracing, EndpointExt, Route, Server};
-use poem_mcpserver::{streamable_http, McpServer};
+use poem::{EndpointExt, Route, Server, listener::TcpListener, middleware::Tracing};
+use poem_mcpserver::{McpServer, streamable_http};
 use tracing::info;
 
 mod mcp;
@@ -14,7 +14,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Initialize logging
     if std::env::var_os("RUST_LOG").is_none() {
-        std::env::set_var("RUST_LOG", "info");
+        unsafe { std::env::set_var("RUST_LOG", "info") };
     }
     tracing_subscriber::fmt::init();
 
