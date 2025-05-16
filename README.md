@@ -1,5 +1,8 @@
 # SSH-MCP Server
 
+![Crates.io Version](https://img.shields.io/crates/v/ssh-mcp)
+![Docker Image Version](https://img.shields.io/docker/v/mingyang91/ssh-mcp)
+
 A Rust implementation of an SSH client server with Model Context Protocol (MCP) integration, allowing Large Language Models (LLMs) to connect to a SSH server and utilize SSH features.
 
 ## Features
