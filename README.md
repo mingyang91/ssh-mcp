@@ -11,24 +11,47 @@ A Rust implementation of an SSH client server with Model Context Protocol (MCP) 
 - **MCP Protocol Support**: Built with poem-mcpserver to enable AI/LLM compatibility
 - **Stateful Connections**: Maintain SSH sessions across multiple commands
 
-## Prerequisites
-
-- Rust 1.70.0 or later
-- Cargo package manager
-
 ## Installation and Integration
 
-### Installing as a Tool
+You have two options for installation:
 
-You can install ssh-mcp directly from cargo:
+### Option 1: Using Docker (Recommended)
+
+No Rust toolchain required - just Docker!
+
+```bash
+# Pull the pre-built image from Docker Hub
+docker pull mingyang91/ssh-mcp
+
+# Run the server
+docker run -p 8000:8000 mingyang91/ssh-mcp
+```
+
+Or build the image yourself:
+
+```bash
+# Build the Docker image
+docker build -t ssh-mcp .
+
+# Run the server
+docker run -p 8000:8000 ssh-mcp
+```
+
+### Option 2: Installing via Cargo
+
+Prerequisites:
+- Rust 1.70.0 or later
+- Cargo package manager
 
 ```bash
 cargo install ssh-mcp
 ```
 
-### Integration with mcpServers
+## Integration with mcpServers
 
 To use SSH-MCP with mcpServers, add the following configuration to your mcpServers JSON configuration:
+
+### If installed via Cargo:
 
 ```json
 {
@@ -41,7 +64,20 @@ To use SSH-MCP with mcpServers, add the following configuration to your mcpServe
 }
 ```
 
-This will register the `ssh-mcp-stdio` binary as an SSH handler, allowing LLMs to manage SSH connections through your MCP server.
+### If using Docker:
+
+```json
+{
+  "mcpServers": {
+    "ssh": {
+      "command": "docker",
+      "args": ["run", "--entrypoint", "ssh-mcp-stdio", "-i", "--rm", "ssh-mcp"]
+    }
+  }
+}
+```
+
+This will register the SSH handler, allowing LLMs to manage SSH connections through your MCP server.
 
 ## Usage
 
@@ -198,10 +234,22 @@ To build without port forwarding:
 cargo build --release --no-default-features
 ```
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+### CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration and deployment:
+
+- All PRs and commits to main are automatically tested
+- Tagged releases (starting with 'v') are automatically published to crates.io
+- Docker images are automatically built and pushed to Docker Hub
+  - Latest tag for main branch
+  - Version tags for semantic versioned releases (v1.0.0, v1.0, etc.)
+- To create a new release, ensure version in Cargo.toml matches the tag (e.g., v0.1.0)
+- You'll need to set up the `CARGO_REGISTRY_TOKEN`, `DOCKERHUB_USERNAME`, and `DOCKERHUB_TOKEN` secrets in your GitHub repository settings
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
