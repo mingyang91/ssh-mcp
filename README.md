@@ -21,7 +21,7 @@ A Rust implementation of an SSH client server with Model Context Protocol (MCP) 
 
 ## Installation and Integration
 
-You have two options for installation:
+You have three options for installation:
 
 ### Option 1: Using Docker (Recommended)
 
@@ -54,6 +54,25 @@ Prerequisites:
 ```bash
 cargo install ssh-mcp
 ```
+
+### Option 3: Windsurf Integration (for Cascade)
+
+You can integrate SSH-MCP directly with Windsurf to use SSH capabilities in Cascade:
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/taciclei/ssh-mcp.git
+   cd ssh-mcp
+   ```
+
+2. Run the Windsurf setup script:
+   ```bash
+   ./windsurf-setup.sh
+   ```
+
+3. Restart Windsurf
+
+This will install and configure SSH-MCP for use with Cascade. For detailed instructions, see [WINDSURF.md](WINDSURF.md).
 
 ## Integration with mcpServers
 
